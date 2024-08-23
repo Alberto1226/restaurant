@@ -2,7 +2,10 @@
 // export const API_HOST = "http://localhost:5050";
 
 // Constantes para puesta en produccion
-export const API_HOST = "https://api-restaurant-seven.vercel.app";
+// export const API_HOST = "https://api-restaurant-seven.vercel.app";
+
+// Constantes para puesta en produccion
+export const API_HOST = "https://api-restaurant-git-demo-jos-david-ayala-francos-projects.vercel.app";
 
 export const API_CLOUDINARY =
   "https://api.cloudinary.com/v1_1/omarlestrella/image/upload";
