@@ -1,21 +1,53 @@
 import { useEffect, useState } from "react";
 import { listarVentasRangoFechas } from "../../../api/ventas";
+import CancelarVenta from "../../Ventas/components/CancelarVenta/CancelarVenta";
 import dayjs from "dayjs";
 import DataTable from "react-data-table-component";
 import { estilos } from "../../../utils/tableStyled";
 import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import BasicModal from "../../../components/Modal/BasicModal";
 import DetallesListaVentas from "./DetallesListaVentas";
-import { listarCategorias } from "../../../api/categorias";
+import { listarCategorias} from "../../../api/categorias";
 import ReporteCSV from "./GenerarDocs/ReportePDF";
 import { Bar } from "react-chartjs-2";
 import Utilidades from "./Utilidades";
+import {
+  getTokenApi,
+  isExpiredToken,
+  logoutApi,
+  obtenidusuarioLogueado,
+} from "../../api/auth";
 
 function ListVentas(props) {
   console.log(props);
   const { fechaInicial, fechaFinal, filtros } = props;
+
+  const [tipoUsuario, setTipoUsuario] = useState("");
+
+  const obtenerDatosUsuario = () => {
+    try {
+      obtenerUsuario(obtenidusuarioLogueado(getTokenApi()))
+        .then((response) => {
+          const { data } = response;
+          //console.log(data)
+          setTipoUsuario(data.admin);
+        })
+        .catch((e) => {
+          if (e.message === "Network Error") {
+            //console.log("No hay internet")
+            toast.error("Conexión al servidor no disponible");
+          }
+        });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    obtenerDatosUsuario();
+  }, []);
 
   const [listCategorias, setListCategorias] = useState([]);
   const [categoriasCargadas, setCategoriasCargadas] = useState(false);
@@ -52,6 +84,12 @@ function ListVentas(props) {
 
   const detallesListaVentas = (content) => {
     setTitulosModal("Detalles Ventas");
+    setContentModal(content);
+    setShowModal(true);
+  };
+
+  const cancelarVenta = (content) => {
+    setTitulosModal("Cancelar venta");
     setContentModal(content);
     setShowModal(true);
   };
@@ -177,6 +215,39 @@ function ListVentas(props) {
         </>
       ),
       sortable: true,
+      center: true,
+      reorder: false,
+    },
+    {
+      name: "Acciones",
+      selector: (row) => (
+        <>
+        {tipoUsuario == "true" ? (<>
+          <div className="flex justify-end items-center space-x-4">
+            <Badge
+              className="cursor-pointer"
+              bg="danger"
+              onClick={() =>
+                cancelarVenta(
+                  <CancelarVenta
+                    datosInsumos={row}
+                    setShow={setShowModal}
+                    datosVentas={row}
+                  />
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faTrashCan} className="text-lg" />
+            </Badge>
+          </div>
+          </>) : (
+            <>
+            No disponibles
+            </>
+          )}
+        </>
+      ),
+      sortable: false,
       center: true,
       reorder: false,
     },
